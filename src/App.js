@@ -1,24 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState, createContext } from "react";
+import { init, clientState } from "alphadex-sdk-js";
+import { PairsList } from "./PairsList";
+import { PairInfo } from "./PairInfo";
+
+init(); 
+export const AdexStateContext = createContext();
 
 function App() {
+  
+  const [adexState, setAdexState] = useState(clientState);
+
+  useEffect(() => {
+    let sub = clientState.stateChanged$.subscribe(newState => setAdexState(newState));
+    return () => {
+      if (sub) {
+        sub.unsubscribe();
+      }
+    }
+  }, []);
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AdexStateContext.Provider value={adexState}>
+      <h1>Hello AlphaDEX</h1>
+      <p>AlphaDEX SDK connection status: {adexState.status}</p>
+      <PairsList/>
+      <PairInfo/>
+    </AdexStateContext.Provider>
   );
 }
 
